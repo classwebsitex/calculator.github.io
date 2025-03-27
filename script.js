@@ -219,47 +219,136 @@ function initPrimeCalculator() {
     // Gestisci il pulsante di calcolo
     calculateBtn.addEventListener('click', function() {
         const quantity = parseInt(quantityInput.value);
-        
+
         if (isNaN(quantity) || quantity <= 0) {
             showError('Inserisci un numero positivo valido.');
             return;
         }
-        
+
         if (quantity > 10000) {
             if (!confirm('Il calcolo potrebbe richiedere molto tempo. Continuare?')) {
                 return;
             }
         }
-        
+
         // Disabilita il pulsante durante il calcolo
         calculateBtn.disabled = true;
         statusElement.textContent = 'Calcolo in corso...';
-        
+
         // Avvia il calcolo in un worker separato
         setTimeout(function() {
             const primes = findNPrimes(quantity);
             showResults(primes);
         }, 100);
     });
-    
+
+    // Gestisci il pulsante Fast Mode
+    const fastModeBtn = document.getElementById('fast-mode-btn');
+    fastModeBtn.addEventListener('click', function() {
+        const quantity = parseInt(quantityInput.value);
+
+        if (isNaN(quantity) || quantity <= 0) {
+            showError('Inserisci un numero positivo valido.');
+            return;
+        }
+
+        // Conferma per calcoli molto grandi
+        if (quantity > 100000) {
+            if (!confirm(`Stai per calcolare ${quantity.toLocaleString()} numeri primi in modalità veloce. Questo potrebbe richiedere molta memoria e CPU. Continuare?`)) {
+                return;
+            }
+        }
+
+        // Disabilita i pulsanti durante il calcolo
+        calculateBtn.disabled = true;
+        fastModeBtn.disabled = true;
+        statusElement.textContent = 'Fast Mode: ottimizzazione in corso...';
+
+        // Ottimizza le prestazioni disattivando le animazioni
+        const originalAnimationSpeed = animationSpeed;
+        animationSpeed = 500; // Massima velocità
+
+        // Usa setTimeout per non bloccare l'interfaccia
+        setTimeout(function() {
+            // Usa un algoritmo ottimizzato per grandi quantità
+            statusElement.textContent = 'Fast Mode: calcolo in corso...';
+            console.time('FastMode');
+
+            const primes = findNPrimesFast(quantity);
+            console.timeEnd('FastMode');
+
+            // Mostra i risultati in modalità testo (più veloce)
+            showTextResults(primes, 'list');
+
+            // Ripristina lo stato
+            animationSpeed = originalAnimationSpeed;
+            calculateBtn.disabled = false;
+            fastModeBtn.disabled = false;
+            statusElement.textContent = `Fast Mode: completato! ${primes.length.toLocaleString()} numeri primi trovati`;
+        }, 100);
+    });
+
+    // Gestisci il pulsante di esportazione
+    const exportPrimesBtn = document.getElementById('export-primes-btn');
+    exportPrimesBtn.addEventListener('click', function() {
+        if (!primesFound || primesFound.length === 0) {
+            showError('Nessun numero primo da esportare. Calcola prima i numeri primi.');
+            return;
+        }
+
+        exportToFile(primesFound, 'numeri_primi.txt');
+    });
+
     // Gestisci il pulsante di cancellazione
     clearBtn.addEventListener('click', function() {
         quantityInput.value = '';
         textOutput.textContent = '';
         resultsTitle.textContent = 'Risultati';
         statusElement.textContent = 'Pronto';
-        
+
         // Ferma qualsiasi animazione in corso
         animationActive = false;
-        
+
         // Pulisci il canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
+
+    // Funzione per esportare dati in un file
+    function exportToFile(data, filename) {
+        // Converti l'array in testo
+        let content;
+        if (Array.isArray(data)) {
+            content = data.join(', ');
+        } else {
+            content = data.toString();
+        }
+
+        // Crea un blob con il contenuto
+        const blob = new Blob([content], { type: 'text/plain' });
+
+        // Crea un URL per il blob
+        const url = URL.createObjectURL(blob);
+
+        // Crea un elemento <a> per il download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+
+        // Aggiungi l'elemento al DOM, fai clic e rimuovilo
+        document.body.appendChild(a);
+        a.click();
+
+        // Pulizia
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
     
     // Trova i primi n numeri primi
     function findNPrimes(n) {
         if (n <= 0) return [];
-        
+
         // Stima del limite superiore usando il teorema dei numeri primi
         let limit;
         if (n < 6) {
@@ -268,11 +357,11 @@ function initPrimeCalculator() {
             // Approssimazione: n-esimo numero primo è circa n * log(n)
             limit = Math.floor(n * (Math.log(n) + Math.log(Math.log(n)))) + 1;
         }
-        
+
         // Implementazione del Crivello di Eratostene
         const sieve = new Array(limit + 1).fill(true);
         sieve[0] = sieve[1] = false;
-        
+
         for (let i = 2; i <= Math.sqrt(limit); i++) {
             if (sieve[i]) {
                 for (let j = i * i; j <= limit; j += i) {
@@ -280,7 +369,7 @@ function initPrimeCalculator() {
                 }
             }
         }
-        
+
         // Raccogli i primi n numeri primi
         const primes = [];
         for (let i = 0; i <= limit; i++) {
@@ -289,7 +378,66 @@ function initPrimeCalculator() {
                 if (primes.length >= n) break;
             }
         }
-        
+
+        return primes;
+    }
+
+    // Versione ottimizzata per grandi quantità di numeri primi
+    function findNPrimesFast(n) {
+        if (n <= 0) return [];
+
+        // Per quantità molto grandi, usiamo una stima più precisa
+        let limit;
+        if (n < 6) {
+            limit = 13;
+        } else if (n < 100000) {
+            limit = Math.floor(n * (Math.log(n) + Math.log(Math.log(n)))) + 1;
+        } else {
+            // Per n molto grandi, usiamo una stima più precisa
+            limit = Math.floor(n * (Math.log(n) + Math.log(Math.log(n)) - 0.9385)) + 1;
+        }
+
+        // Ottimizzazione: usiamo un array di bit invece di booleani per risparmiare memoria
+        // In JavaScript non abbiamo BitSet, quindi usiamo Uint8Array come compromesso
+        const sieveSize = Math.ceil((limit + 1) / 8);
+        const sieve = new Uint8Array(sieveSize);
+
+        // Funzioni helper per lavorare con i bit
+        const setBit = (arr, index) => {
+            const byteIndex = Math.floor(index / 8);
+            const bitIndex = index % 8;
+            arr[byteIndex] |= (1 << bitIndex);
+        };
+
+        const getBit = (arr, index) => {
+            const byteIndex = Math.floor(index / 8);
+            const bitIndex = index % 8;
+            return (arr[byteIndex] & (1 << bitIndex)) !== 0;
+        };
+
+        // Inizializza: 0 e 1 non sono primi
+        setBit(sieve, 0);
+        setBit(sieve, 1);
+
+        // Implementazione ottimizzata del Crivello di Eratostene
+        const sqrtLimit = Math.sqrt(limit);
+        for (let i = 2; i <= sqrtLimit; i++) {
+            if (!getBit(sieve, i)) {
+                // Ottimizzazione: inizia da i*i invece di 2*i
+                for (let j = i * i; j <= limit; j += i) {
+                    setBit(sieve, j);
+                }
+            }
+        }
+
+        // Raccogli i primi n numeri primi
+        const primes = [];
+        for (let i = 2; i <= limit && primes.length < n; i++) {
+            if (!getBit(sieve, i)) {
+                primes.push(i);
+            }
+        }
+
         return primes;
     }
     
@@ -520,8 +668,16 @@ function initConstantsCalculator() {
     const calculateEBtn = document.getElementById('calculate-e');
     const calculatePhiBtn = document.getElementById('calculate-phi');
     const calculateSqrt2Btn = document.getElementById('calculate-sqrt2');
+    const exportConstantBtn = document.getElementById('export-constant-btn');
     const precisionInput = document.getElementById('precision');
     const constantsOutput = document.getElementById('constants-output');
+
+    // Variabile per memorizzare l'ultima costante calcolata
+    let lastCalculatedConstant = {
+        name: '',
+        value: '',
+        precision: 0
+    };
 
     // Calcola Pi usando l'algoritmo di Chudnovsky
     calculatePiBtn.addEventListener('click', function() {
@@ -538,6 +694,13 @@ function initConstantsCalculator() {
             try {
                 const pi = calculatePi(precision);
                 constantsOutput.textContent = `π = ${pi}`;
+
+                // Salva l'ultima costante calcolata
+                lastCalculatedConstant = {
+                    name: 'Pi Greco (π)',
+                    value: pi,
+                    precision: precision
+                };
             } catch (error) {
                 constantsOutput.textContent = `Errore: ${error.message}`;
             } finally {
@@ -561,6 +724,13 @@ function initConstantsCalculator() {
             try {
                 const e = calculateE(precision);
                 constantsOutput.textContent = `e = ${e}`;
+
+                // Salva l'ultima costante calcolata
+                lastCalculatedConstant = {
+                    name: 'Numero di Eulero (e)',
+                    value: e,
+                    precision: precision
+                };
             } catch (error) {
                 constantsOutput.textContent = `Errore: ${error.message}`;
             } finally {
@@ -584,6 +754,13 @@ function initConstantsCalculator() {
             try {
                 const phi = calculatePhi(precision);
                 constantsOutput.textContent = `φ = ${phi}`;
+
+                // Salva l'ultima costante calcolata
+                lastCalculatedConstant = {
+                    name: 'Sezione Aurea (φ)',
+                    value: phi,
+                    precision: precision
+                };
             } catch (error) {
                 constantsOutput.textContent = `Errore: ${error.message}`;
             } finally {
@@ -607,6 +784,13 @@ function initConstantsCalculator() {
             try {
                 const sqrt2 = calculateSqrt2(precision);
                 constantsOutput.textContent = `√2 = ${sqrt2}`;
+
+                // Salva l'ultima costante calcolata
+                lastCalculatedConstant = {
+                    name: 'Radice di 2 (√2)',
+                    value: sqrt2,
+                    precision: precision
+                };
             } catch (error) {
                 constantsOutput.textContent = `Errore: ${error.message}`;
             } finally {
@@ -669,6 +853,26 @@ function initConstantsCalculator() {
 
         return x.toFixed(precision);
     }
+
+    // Gestisci il pulsante di esportazione delle costanti
+    exportConstantBtn.addEventListener('click', function() {
+        if (!lastCalculatedConstant.name) {
+            alert('Nessuna costante da esportare. Calcola prima una costante.');
+            return;
+        }
+
+        // Crea il contenuto del file
+        const content = `${lastCalculatedConstant.name}\n` +
+                        `Precisione: ${lastCalculatedConstant.precision} cifre decimali\n` +
+                        `Valore: ${lastCalculatedConstant.value}\n\n` +
+                        `Calcolato con MathMagia - ${new Date().toLocaleString()}`;
+
+        // Nome del file basato sulla costante
+        const filename = lastCalculatedConstant.name.replace(/[()]/g, '').replace(/\s+/g, '_').toLowerCase() + '.txt';
+
+        // Esporta il file
+        exportToFile(content, filename);
+    });
 }
 
 // Inizializza le costanti matematiche

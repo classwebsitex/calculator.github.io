@@ -313,6 +313,28 @@ main {
     box-shadow: 0 4px 12px rgba(var(--secondary-color-rgb), 0.3);
 }
 
+.btn-accent {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn-accent:hover {
+    background-color: var(--accent-color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3);
+}
+
+.btn-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: var(--info-color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--info-color-rgb), 0.3);
+}
+
 .btn-details {
     background-color: transparent;
     color: var(--primary-color);
@@ -987,9 +1009,17 @@ footer {
 :root {
     --primary-color-rgb: 99, 102, 241;
     --secondary-color-rgb: 244, 63, 94;
+    --accent-color-rgb: 16, 185, 129;
+    --info-color-rgb: 59, 130, 246;
+    --accent-color-dark: #059669;
+    --info-color-dark: #2563eb;
 }
 
 [data-theme="dark"] {
     --primary-color-rgb: 129, 140, 248;
     --secondary-color-rgb: 251, 113, 133;
+    --accent-color-rgb: 52, 211, 153;
+    --info-color-rgb: 96, 165, 250;
+    --accent-color-dark: #10b981;
+    --info-color-dark: #3b82f6;
 }

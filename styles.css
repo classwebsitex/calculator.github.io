@@ -15,6 +15,7 @@
     --success-color: #10b981;
     --error-color: #ef4444;
     --warning-color: #f59e0b;
+    --warning-color-dark: #d97706;
     --info-color: #3b82f6;
 }
 
@@ -429,6 +430,53 @@ main {
     background-color: rgba(var(--error-color-rgb), 0.2);
     color: var(--error-color);
     border-left: 4px solid var(--error-color);
+}
+
+/* Stili per l'avviso di memoria */
+.memory-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.memory-warning-content {
+    background-color: var(--card-background);
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 600px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border-left: 5px solid var(--warning-color);
+}
+
+.memory-warning h3 {
+    color: var(--warning-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.memory-warning p {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.memory-warning ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    color: var(--text-color);
+}
+
+.memory-warning button {
+    margin-top: 1rem;
 }
 
 .display-options, .animation-speed {

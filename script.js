@@ -230,6 +230,13 @@ function initPrimeCalculator() {
             return;
         }
 
+        // Imposta un limite massimo per evitare problemi di memoria
+        const maxSafeQuantity = 500000;
+        if (quantity > maxSafeQuantity) {
+            showError(`Per evitare problemi di memoria, il limite massimo è di ${maxSafeQuantity.toLocaleString()} numeri primi. Per calcoli più grandi, usa la Fast Mode.`);
+            return;
+        }
+
         if (quantity > 10000) {
             if (!confirm('Il calcolo potrebbe richiedere molto tempo. Continuare?')) {
                 return;
@@ -242,8 +249,15 @@ function initPrimeCalculator() {
 
         // Avvia il calcolo in un worker separato
         setTimeout(function() {
-            const primes = findNPrimes(quantity);
-            showResults(primes);
+            try {
+                const primes = findNPrimes(quantity);
+                showResults(primes);
+            } catch (error) {
+                console.error('Errore nel calcolo:', error);
+                statusElement.textContent = 'Errore durante il calcolo. Prova con un numero più piccolo.';
+                showError('Si è verificato un errore durante il calcolo. Prova con un numero più piccolo.');
+                calculateBtn.disabled = false;
+            }
         }, 100);
     });
 
@@ -257,7 +271,14 @@ function initPrimeCalculator() {
             return;
         }
 
-        // Conferma per calcoli molto grandi
+        // Imposta un limite massimo per evitare problemi di memoria
+        const maxSafeQuantity = 1000000;
+        if (quantity > maxSafeQuantity) {
+            showError(`Per evitare problemi di memoria, il limite massimo è di ${maxSafeQuantity.toLocaleString()} numeri primi.`);
+            return;
+        }
+
+        // Conferma per calcoli grandi
         if (quantity > 100000) {
             if (!confirm(`Stai per calcolare ${quantity.toLocaleString()} numeri primi in modalità veloce. Questo potrebbe richiedere molta memoria e CPU. Continuare?`)) {
                 return;
@@ -275,21 +296,30 @@ function initPrimeCalculator() {
 
         // Usa setTimeout per non bloccare l'interfaccia
         setTimeout(function() {
-            // Usa un algoritmo ottimizzato per grandi quantità
-            statusElement.textContent = 'Fast Mode: calcolo in corso...';
-            console.time('FastMode');
+            try {
+                // Usa un algoritmo ottimizzato per grandi quantità
+                statusElement.textContent = 'Fast Mode: calcolo in corso...';
+                console.time('FastMode');
 
-            const primes = findNPrimesFast(quantity);
-            console.timeEnd('FastMode');
+                // Usa l'algoritmo standard ma con gestione della memoria
+                const primes = findNPrimes(quantity);
+                console.timeEnd('FastMode');
 
-            // Mostra i risultati in modalità testo (più veloce)
-            showTextResults(primes, 'list');
+                // Mostra i risultati in modalità testo (più veloce)
+                showTextResults(primes, 'list');
 
-            // Ripristina lo stato
-            animationSpeed = originalAnimationSpeed;
-            calculateBtn.disabled = false;
-            fastModeBtn.disabled = false;
-            statusElement.textContent = `Fast Mode: completato! ${primes.length.toLocaleString()} numeri primi trovati`;
+                // Ripristina lo stato
+                statusElement.textContent = `Fast Mode: completato! ${primes.length.toLocaleString()} numeri primi trovati`;
+            } catch (error) {
+                console.error('Errore in Fast Mode:', error);
+                statusElement.textContent = 'Errore durante il calcolo. Prova con un numero più piccolo.';
+                showError('Si è verificato un errore durante il calcolo. Prova con un numero più piccolo.');
+            } finally {
+                // Assicurati che i pulsanti vengano riabilitati anche in caso di errore
+                animationSpeed = originalAnimationSpeed;
+                calculateBtn.disabled = false;
+                fastModeBtn.disabled = false;
+            }
         }, 100);
     });
 
@@ -405,63 +435,29 @@ function initPrimeCalculator() {
         return { isPrime: true, divisor: null };
     }
 
-    // Versione ottimizzata per grandi quantità di numeri primi
-    function findNPrimesFast(n) {
-        if (n <= 0) return [];
+    // Funzione per mostrare un messaggio di errore
+    function showMemoryWarning() {
+        const memoryWarning = document.createElement('div');
+        memoryWarning.className = 'memory-warning';
+        memoryWarning.innerHTML = `
+            <div class="memory-warning-content">
+                <h3><i class="fas fa-exclamation-triangle"></i> Attenzione all'uso della memoria</h3>
+                <p>Il calcolo di grandi quantità di numeri primi richiede molta memoria.</p>
+                <p>Per evitare problemi, abbiamo impostato dei limiti:</p>
+                <ul>
+                    <li>Modalità standard: massimo 500.000 numeri primi</li>
+                    <li>Fast Mode: massimo 1.000.000 numeri primi</li>
+                </ul>
+                <p>Questi limiti sono stati impostati per garantire che l'applicazione funzioni correttamente su tutti i dispositivi.</p>
+                <button id="close-memory-warning" class="btn btn-primary">Ho capito</button>
+            </div>
+        `;
 
-        // Per quantità molto grandi, usiamo una stima più precisa
-        let limit;
-        if (n < 6) {
-            limit = 13;
-        } else if (n < 100000) {
-            limit = Math.floor(n * (Math.log(n) + Math.log(Math.log(n)))) + 1;
-        } else {
-            // Per n molto grandi, usiamo una stima più precisa
-            limit = Math.floor(n * (Math.log(n) + Math.log(Math.log(n)) - 0.9385)) + 1;
-        }
+        document.body.appendChild(memoryWarning);
 
-        // Ottimizzazione: usiamo un array di bit invece di booleani per risparmiare memoria
-        // In JavaScript non abbiamo BitSet, quindi usiamo Uint8Array come compromesso
-        const sieveSize = Math.ceil((limit + 1) / 8);
-        const sieve = new Uint8Array(sieveSize);
-
-        // Funzioni helper per lavorare con i bit
-        const setBit = (arr, index) => {
-            const byteIndex = Math.floor(index / 8);
-            const bitIndex = index % 8;
-            arr[byteIndex] |= (1 << bitIndex);
-        };
-
-        const getBit = (arr, index) => {
-            const byteIndex = Math.floor(index / 8);
-            const bitIndex = index % 8;
-            return (arr[byteIndex] & (1 << bitIndex)) !== 0;
-        };
-
-        // Inizializza: 0 e 1 non sono primi
-        setBit(sieve, 0);
-        setBit(sieve, 1);
-
-        // Implementazione ottimizzata del Crivello di Eratostene
-        const sqrtLimit = Math.sqrt(limit);
-        for (let i = 2; i <= sqrtLimit; i++) {
-            if (!getBit(sieve, i)) {
-                // Ottimizzazione: inizia da i*i invece di 2*i
-                for (let j = i * i; j <= limit; j += i) {
-                    setBit(sieve, j);
-                }
-            }
-        }
-
-        // Raccogli i primi n numeri primi
-        const primes = [];
-        for (let i = 2; i <= limit && primes.length < n; i++) {
-            if (!getBit(sieve, i)) {
-                primes.push(i);
-            }
-        }
-
-        return primes;
+        document.getElementById('close-memory-warning').addEventListener('click', function() {
+            document.body.removeChild(memoryWarning);
+        });
     }
     
     // Mostra i risultati
@@ -672,8 +668,25 @@ function initPrimeCalculator() {
     }
     
     // Mostra un errore
-    function showError(message) {
-        alert(`Errore: ${message}`);
+    function showError(message, isWarning = false) {
+        if (isWarning) {
+            statusElement.textContent = message;
+            statusElement.style.color = 'var(--warning-color)';
+        } else {
+            statusElement.textContent = message;
+            statusElement.style.color = 'var(--error-color)';
+        }
+
+        // Per errori gravi relativi alla memoria, mostra anche un avviso dettagliato
+        if (message.includes('memoria')) {
+            showMemoryWarning();
+        }
+
+        setTimeout(() => {
+            statusElement.textContent = 'Pronto';
+            statusElement.style.color = '';
+        }, 5000);
+
         resetStatus();
     }
     

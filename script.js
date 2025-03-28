@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inizializza il calcolatore di numeri primi
     initPrimeCalculator();
 
+    // Inizializza il verificatore di numeri primi
+    initPrimeChecker();
+
     // Inizializza le costanti matematiche
     initConstants();
 
@@ -216,53 +219,7 @@ function initPrimeCalculator() {
     animationSpeed = parseInt(speedSlider.value);
     speedValue.textContent = `${animationSpeed} numeri/secondo`;
 
-    // Inizializza il verificatore di numeri primi
-    const checkPrimeInput = document.getElementById('check-prime');
-    const checkPrimeBtn = document.getElementById('check-prime-btn');
-    const primeCheckResult = document.getElementById('prime-check-result');
 
-    checkPrimeBtn.addEventListener('click', function() {
-        const number = parseInt(checkPrimeInput.value);
-
-        if (isNaN(number) || number <= 0) {
-            primeCheckResult.className = 'prime-check-result not-prime';
-            primeCheckResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Inserisci un numero positivo valido.';
-            return;
-        }
-
-        // Verifica se il numero è troppo grande
-        if (number > Number.MAX_SAFE_INTEGER) {
-            primeCheckResult.className = 'prime-check-result not-prime';
-            primeCheckResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Numero troppo grande per essere verificato con precisione.';
-            return;
-        }
-
-        // Mostra un messaggio di caricamento per numeri molto grandi
-        if (number > 1000000) {
-            primeCheckResult.className = 'prime-check-result';
-            primeCheckResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifica in corso...';
-        }
-
-        // Esegui la verifica in modo asincrono per non bloccare l'interfaccia
-        setTimeout(() => {
-            const result = isPrimeWithDivisor(number);
-
-            if (result.isPrime) {
-                primeCheckResult.className = 'prime-check-result is-prime';
-                primeCheckResult.innerHTML = `<i class="fas fa-check-circle"></i> ${number.toLocaleString()} è un numero primo!`;
-            } else {
-                primeCheckResult.className = 'prime-check-result not-prime';
-                primeCheckResult.innerHTML = `<i class="fas fa-times-circle"></i> ${number.toLocaleString()} non è primo. È divisibile per ${result.divisor}.`;
-            }
-        }, 10);
-    });
-
-    // Aggiungi la possibilità di premere Invio per verificare
-    checkPrimeInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            checkPrimeBtn.click();
-        }
-    });
 
     // Gestisci il pulsante di calcolo
     calculateBtn.addEventListener('click', function() {
@@ -1165,16 +1122,16 @@ function initSmoothScrolling() {
     // Aggiorna la classe active durante lo scroll
     window.addEventListener('scroll', function() {
         const scrollPosition = window.scrollY;
-        
+
         document.querySelectorAll('section').forEach(section => {
             const sectionTop = section.offsetTop - 100;
             const sectionBottom = sectionTop + section.offsetHeight;
             const sectionId = '#' + section.getAttribute('id');
-            
+
             if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
                 document.querySelectorAll('nav a').forEach(navLink => {
                     navLink.classList.remove('active');
-                    
+
                     if (navLink.getAttribute('href') === sectionId) {
                         navLink.classList.add('active');
                     }
@@ -1182,4 +1139,76 @@ function initSmoothScrolling() {
             }
         });
     });
+}
+
+// Funzione per inizializzare il verificatore di numeri primi
+function initPrimeChecker() {
+    try {
+        console.log('Inizializzazione del verificatore di numeri primi...');
+        const checkPrimeInput = document.getElementById('check-prime');
+        const checkPrimeBtn = document.getElementById('check-prime-btn');
+        const primeCheckResult = document.getElementById('prime-check-result');
+
+        if (!checkPrimeInput || !checkPrimeBtn || !primeCheckResult) {
+            console.error('Elementi del verificatore di numeri primi non trovati nel DOM');
+            return;
+        }
+
+        checkPrimeBtn.addEventListener('click', function() {
+            try {
+                const number = parseInt(checkPrimeInput.value);
+
+                if (isNaN(number) || number <= 0) {
+                    primeCheckResult.className = 'prime-check-result not-prime';
+                    primeCheckResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Inserisci un numero positivo valido.';
+                    return;
+                }
+
+                // Verifica se il numero è troppo grande
+                if (number > Number.MAX_SAFE_INTEGER) {
+                    primeCheckResult.className = 'prime-check-result not-prime';
+                    primeCheckResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Numero troppo grande per essere verificato con precisione.';
+                    return;
+                }
+
+                // Mostra un messaggio di caricamento per numeri molto grandi
+                if (number > 1000000) {
+                    primeCheckResult.className = 'prime-check-result';
+                    primeCheckResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifica in corso...';
+                }
+
+                // Esegui la verifica in modo asincrono per non bloccare l'interfaccia
+                setTimeout(() => {
+                    try {
+                        const result = isPrimeWithDivisor(number);
+
+                        if (result.isPrime) {
+                            primeCheckResult.className = 'prime-check-result is-prime';
+                            primeCheckResult.innerHTML = `<i class="fas fa-check-circle"></i> ${number.toLocaleString()} è un numero primo!`;
+                        } else {
+                            primeCheckResult.className = 'prime-check-result not-prime';
+                            primeCheckResult.innerHTML = `<i class="fas fa-times-circle"></i> ${number.toLocaleString()} non è primo. È divisibile per ${result.divisor}.`;
+                        }
+                    } catch (error) {
+                        console.error('Errore durante la verifica del numero primo:', error);
+                        primeCheckResult.className = 'prime-check-result not-prime';
+                        primeCheckResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Errore durante la verifica.';
+                    }
+                }, 10);
+            } catch (error) {
+                console.error('Errore nel gestore del pulsante di verifica:', error);
+            }
+        });
+
+        // Aggiungi la possibilità di premere Invio per verificare
+        checkPrimeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPrimeBtn.click();
+            }
+        });
+
+        console.log('Verificatore di numeri primi inizializzato con successo');
+    } catch (error) {
+        console.error('Errore durante l\'inizializzazione del verificatore di numeri primi:', error);
+    }
 }

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathMagia - Esplora i Numeri Primi</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="particles-container" id="particles-js"></div>
+
+    <header>
+        <div class="logo">
+            <span class="logo-icon"><i class="fas fa-square-root-alt"></i></span>
+            <h1>MathMagia</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#calcolatore" class="active">Calcolatore</a></li>
+                <li><a href="#costanti">Costanti</a></li>
+                <li><a href="#curiosita">Curiosità</a></li>
+            </ul>
+        </nav>
+        <div class="theme-toggle">
+            <button id="theme-toggle-btn">
+                <i class="fas fa-sun"></i>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="hero-content">
+                <h1>Esplora la Magia dei Numeri Primi</h1>
+                <p>Scopri il mondo affascinante della matematica attraverso i numeri primi, le costanti e le curiosità matematiche.</p>
+                <a href="#calcolatore" class="btn btn-primary">Inizia a Esplorare</a>
+            </div>
+            <div class="hero-image">
+                <div class="math-symbols">
+                    <span>π</span>
+                    <span>∞</span>
+                    <span>∑</span>
+                    <span>√</span>
+                    <span>∫</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="calcolatore" class="section">
+            <div class="section-header">
+                <h2>Calcolatore di Numeri Primi</h2>
+                <p>Genera e visualizza numeri primi con animazioni interattive</p>
+            </div>
+
+            <div class="calculator-container">
+                <div class="calculator-controls">
+                    <div class="input-group">
+                        <label for="quantity">Quanti numeri primi vuoi visualizzare?</label>
+                        <input type="number" id="quantity" min="1" max="10000" value="100">
+                    </div>
+
+                    <div class="prime-checker">
+                        <h3>Verifica Numero Primo</h3>
+                        <div class="input-group">
+                            <label for="check-prime">Inserisci un numero da verificare:</label>
+                            <input type="number" id="check-prime" min="1" value="">
+                        </div>
+                        <button id="check-prime-btn" class="btn btn-accent">
+                            <i class="fas fa-search"></i> Verifica
+                        </button>
+                        <div id="prime-check-result" class="prime-check-result"></div>
+                    </div>
+
+                    <div class="display-options">
+                        <h3>Modalità di visualizzazione</h3>
+                        <div class="radio-group">
+                            <label class="radio-container">
+                                <input type="radio" name="display-mode" value="visual" checked>
+                                <span class="radio-custom"></span>
+                                Visuale
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="display-mode" value="list">
+                                <span class="radio-custom"></span>
+                                Lista
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="display-mode" value="grid">
+                                <span class="radio-custom"></span>
+                                Griglia
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="animation-speed">
+                        <h3>Velocità di animazione</h3>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="500" value="50" class="slider" id="speed-slider">
+                            <span id="speed-value">50 numeri/secondo</span>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <button id="calculate-btn" class="btn btn-primary">
+                            <i class="fas fa-calculator"></i> Calcola
+                        </button>
+                        <button id="fast-mode-btn" class="btn btn-accent">
+                            <i class="fas fa-bolt"></i> Fast Mode
+                        </button>
+                        <button id="export-primes-btn" class="btn btn-info">
+                            <i class="fas fa-file-export"></i> Esporta
+                        </button>
+                        <button id="clear-btn" class="btn btn-secondary">
+                            <i class="fas fa-trash-alt"></i> Cancella
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calculator-output">
+                    <div class="output-header">
+                        <h3 id="results-title">Risultati</h3>
+                        <div class="status" id="status">Pronto</div>
+                    </div>
+
+                    <div class="visualization-container" id="visualization-container">
+                        <canvas id="primes-canvas"></canvas>
+                    </div>
+
+                    <div class="text-output" id="text-output"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="costanti" class="section">
+            <div class="section-header">
+                <h2>Costanti Matematiche</h2>
+                <p>Esplora e calcola le costanti più importanti della matematica</p>
+            </div>
+
+            <div class="constants-calculator">
+                <div class="constants-controls">
+                    <h3>Calcola le Costanti Matematiche</h3>
+                    <div class="input-group">
+                        <label for="precision">Precisione (numero di cifre decimali):</label>
+                        <input type="number" id="precision" min="1" max="1000" value="50">
+                    </div>
+                    <div class="constants-buttons">
+                        <button id="calculate-pi" class="btn btn-primary">Calcola π</button>
+                        <button id="calculate-e" class="btn btn-primary">Calcola e</button>
+                        <button id="calculate-phi" class="btn btn-primary">Calcola φ</button>
+                        <button id="calculate-sqrt2" class="btn btn-primary">Calcola √2</button>
+                        <button id="export-constant-btn" class="btn btn-info">
+                            <i class="fas fa-file-export"></i> Esporta
+                        </button>
+                    </div>
+                    <div class="constants-result">
+                        <h4>Risultato:</h4>
+                        <div id="constants-output" class="constants-output"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="constants-container">
+                <div class="constant-card" data-constant="pi">
+                    <div class="constant-symbol">π</div>
+                    <div class="constant-info">
+                        <h3>Pi Greco</h3>
+                        <div class="constant-value">3.14159265359...</div>
+                        <p>Il rapporto tra la circonferenza e il diametro di un cerchio.</p>
+                    </div>
+                    <button class="btn-details">Dettagli</button>
+                </div>
+
+                <div class="constant-card" data-constant="e">
+                    <div class="constant-symbol">e</div>
+                    <div class="constant-info">
+                        <h3>Numero di Eulero</h3>
+                        <div class="constant-value">2.71828182846...</div>
+                        <p>La base dei logaritmi naturali.</p>
+                    </div>
+                    <button class="btn-details">Dettagli</button>
+                </div>
+
+                <div class="constant-card" data-constant="phi">
+                    <div class="constant-symbol">φ</div>
+                    <div class="constant-info">
+                        <h3>Sezione Aurea</h3>
+                        <div class="constant-value">1.61803398875...</div>
+                        <p>Il rapporto divino presente in natura e arte.</p>
+                    </div>
+                    <button class="btn-details">Dettagli</button>
+                </div>
+
+                <div class="constant-card" data-constant="gamma">
+                    <div class="constant-symbol">γ</div>
+                    <div class="constant-info">
+                        <h3>Costante di Eulero-Mascheroni</h3>
+                        <div class="constant-value">0.57721566490...</div>
+                        <p>Limite della differenza tra la serie armonica e il logaritmo naturale.</p>
+                    </div>
+                    <button class="btn-details">Dettagli</button>
+                </div>
+
+                <div class="constant-card" data-constant="sqrt2">
+                    <div class="constant-symbol">√2</div>
+                    <div class="constant-info">
+                        <h3>Radice di 2</h3>
+                        <div class="constant-value">1.41421356237...</div>
+                        <p>La diagonale di un quadrato di lato 1.</p>
+                    </div>
+                    <button class="btn-details">Dettagli</button>
+                </div>
+
+                <div class="constant-card" data-constant="g">
+                    <div class="constant-symbol">g</div>
+                    <div class="constant-info">
+                        <h3>Accelerazione Gravitazionale</h3>
+                        <div class="constant-value">9.80665 m/s²</div>
+                        <p>L'accelerazione dovuta alla gravità terrestre.</p>
+                    </div>
+                    <button class="btn-details">Dettagli</button>
+                </div>
+            </div>
+
+            <div id="constant-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <div id="modal-content"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="curiosita" class="section">
+            <div class="section-header">
+                <h2>Curiosità Matematiche</h2>
+                <p>Scopri fatti sorprendenti sul mondo dei numeri</p>
+            </div>
+
+            <div class="facts-container">
+                <div class="fact-card">
+                    <div class="fact-icon">
+                        <i class="fas fa-infinity"></i>
+                    </div>
+                    <h3>Infiniti Numeri Primi</h3>
+                    <p>Euclide dimostrò più di 2000 anni fa che esistono infiniti numeri primi. La sua dimostrazione è considerata una delle più eleganti della matematica.</p>
+                </div>
+
+                <div class="fact-card">
+                    <div class="fact-icon">
+                        <i class="fas fa-dice"></i>
+                    </div>
+                    <h3>Congettura di Goldbach</h3>
+                    <p>Ogni numero pari maggiore di 2 può essere espresso come somma di due numeri primi. Proposta nel 1742, è ancora un problema irrisolto.</p>
+                </div>
+
+                <div class="fact-card">
+                    <div class="fact-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>Il Numero Primo più Grande</h3>
+                    <p>Il più grande numero primo conosciuto (a gennaio 2023) è 2<sup>82,589,933</sup>-1, un numero con 24,862,048 cifre!</p>
+                </div>
+
+                <div class="fact-card">
+                    <div class="fact-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Numeri Primi Gemelli</h3>
+                    <p>I numeri primi gemelli sono coppie di numeri primi che differiscono di 2, come (3,5), (11,13), (17,19). Non sappiamo se ne esistano infiniti.</p>
+                </div>
+
+                <div class="fact-card">
+                    <div class="fact-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>Il Numero Zero</h3>
+                    <p>Lo zero come concetto matematico fu sviluppato in India intorno al V secolo d.C. e rivoluzionò la matematica.</p>
+                </div>
+
+                <div class="fact-card">
+                    <div class="fact-icon">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <h3>Teorema di Fermat</h3>
+                    <p>L'ultimo teorema di Fermat affermava che non esistono soluzioni intere positive per x<sup>n</sup> + y<sup>n</sup> = z<sup>n</sup> quando n > 2. Fu dimostrato solo nel 1994.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span class="logo-icon"><i class="fas fa-square-root-alt"></i></span>
+                <h2>MathMagia</h2>
+            </div>
+            <div class="footer-links">
+                <h3>Collegamenti Rapidi</h3>
+                <ul>
+                    <li><a href="#calcolatore">Calcolatore</a></li>
+                    <li><a href="#costanti">Costanti</a></li>
+                    <li><a href="#curiosita">Curiosità</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h3>Seguici</h3>
+                <div class="social-icons">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 MathMagia. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
+
+    <div class="scroll-to-top">
+        <button id="scroll-top-btn">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
